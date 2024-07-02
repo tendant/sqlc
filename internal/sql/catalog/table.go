@@ -140,6 +140,8 @@ type columnGenerator interface {
 }
 
 func (c *Catalog) getTable(tableName *ast.TableName) (*Schema, *Table, error) {
+	fmt.Println("getTable schemaName:" + tableName.Schema)
+	fmt.Println("c.DefaultSchema" + c.DefaultSchema)
 	schemaName := tableName.Schema
 	if schemaName == "" {
 		schemaName = c.DefaultSchema

@@ -87,21 +87,31 @@ func (s *Schema) getType(rel *ast.TypeName) (Type, int, error) {
 }
 
 func (c *Catalog) getSchema(name string) (*Schema, error) {
+	var public *Schema
 	for i := range c.Schemas {
+		fmt.Println("getSchema: schemas " + c.Schemas[i].Name)
 		if c.Schemas[i].Name == name {
 			return c.Schemas[i], nil
 		}
+		if c.Schemas[i].Name == "public" {
+			public = c.Schemas[i]
+		}
 	}
-	return nil, sqlerr.SchemaNotFound(name)
+	fmt.Println("getSchema: " + name)
+	return public, nil
+	// return nil, sqlerr.SchemaNotFound(name)
 }
 
 func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {
+	fmt.Println("createSchema:" + *stmt.Name)
 	if stmt.Name == nil {
 		return fmt.Errorf("create schema: empty name")
 	}
 	if _, err := c.getSchema(*stmt.Name); err == nil {
 		// If the default schema already exists, treat additional CREATE SCHEMA
 		// statements as no-ops.
+		fmt.Println("DefaultSchema:" + c.DefaultSchema)
+		fmt.Println("stmt.Name:" + *stmt.Name)
 		if *stmt.Name == c.DefaultSchema {
 			return nil
 		}

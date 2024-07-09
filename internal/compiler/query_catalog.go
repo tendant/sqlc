@@ -29,6 +29,7 @@ func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embed
 		with = nil
 	}
 	qc := &QueryCatalog{catalog: c, ctes: map[string]*Table{}, embeds: embeds}
+	fmt.Println("buildQueryCatalog:")
 	if with != nil {
 		for _, item := range with.Ctes.Items {
 			if cte, ok := item.(*ast.CommonTableExpr); ok {

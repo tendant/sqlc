@@ -79,6 +79,7 @@ func (s *Schema) getType(rel *ast.TypeName) (Type, int, error) {
 			}
 		case *CompositeType:
 			if typ.Name == rel.Name {
+
 				return s.Types[i], i, nil
 			}
 		}
@@ -87,31 +88,46 @@ func (s *Schema) getType(rel *ast.TypeName) (Type, int, error) {
 }
 
 func (c *Catalog) getSchema(name string) (*Schema, error) {
-	var public *Schema
+
+	fmt.Printf("getSchema: %v.\n", name)
 	for i := range c.Schemas {
-		fmt.Println("getSchema: schemas " + c.Schemas[i].Name)
+
+		var tables string
+		if c.Schemas[i].Name == name {
+			for j := range c.Schemas[i].Tables {
+				tables = tables + ", " + c.Schemas[i].Tables[j].Rel.Name
+			}
+			// fmt.Printf("tables: %v\n", tables)
+			return c.Schemas[i], nil
+		}
+		// if c.Schemas[i].Name == "public" {
+		// public = c.Schemas[i]
+		// }
+	}
+	// var public *Schema
+	for i := range c.Schemas {
 		if c.Schemas[i].Name == name {
 			return c.Schemas[i], nil
 		}
-		if c.Schemas[i].Name == "public" {
-			public = c.Schemas[i]
-		}
+		// if c.Schemas[i].Name == "public" {
+		// public = c.Schemas[i]
+		// }
 	}
-	fmt.Println("getSchema: " + name)
-	return public, nil
-	// return nil, sqlerr.SchemaNotFound(name)
+	fmt.Printf("getSchema: %v, Not Found!\n", name)
+	// return public, nil
+	return nil, sqlerr.SchemaNotFound(name)
 }
 
 func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {
-	fmt.Println("createSchema:" + *stmt.Name)
+	fmt.Println("createSchema: " + *stmt.Name)
 	if stmt.Name == nil {
 		return fmt.Errorf("create schema: empty name")
 	}
 	if _, err := c.getSchema(*stmt.Name); err == nil {
 		// If the default schema already exists, treat additional CREATE SCHEMA
 		// statements as no-ops.
-		fmt.Println("DefaultSchema:" + c.DefaultSchema)
-		fmt.Println("stmt.Name:" + *stmt.Name)
+		fmt.Println("DefaultSchema: " + c.DefaultSchema)
+		fmt.Println("stmt.Name: " + *stmt.Name)
 		if *stmt.Name == c.DefaultSchema {
 			return nil
 		}

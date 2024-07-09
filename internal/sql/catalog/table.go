@@ -29,6 +29,7 @@ func checkMissing(err error, missingOK bool) error {
 }
 
 func (table *Table) isExistColumn(cmd *ast.AlterTableCmd) (int, error) {
+	fmt.Println("isExistColumn:" + *cmd.Name)
 	for i, c := range table.Columns {
 		if c.Name == *cmd.Name {
 			return i, nil
@@ -141,7 +142,7 @@ type columnGenerator interface {
 
 func (c *Catalog) getTable(tableName *ast.TableName) (*Schema, *Table, error) {
 	fmt.Println("getTable schemaName:" + tableName.Schema)
-	fmt.Println("c.DefaultSchema" + c.DefaultSchema)
+	fmt.Println("getTable c.DefaultSchema: " + c.DefaultSchema)
 	schemaName := tableName.Schema
 	if schemaName == "" {
 		schemaName = c.DefaultSchema
@@ -157,6 +158,10 @@ func (c *Catalog) getTable(tableName *ast.TableName) (*Schema, *Table, error) {
 		return nil, nil, sqlerr.SchemaNotFound(schemaName)
 	}
 	table, _, err := schema.getTable(tableName)
+	fmt.Printf("Found table (%s) for schema (%s).", tableName, schemaName)
+	for i := range table.Columns {
+		fmt.Println("Column Name:" + table.Columns[i].Name)
+	}
 	if err != nil {
 		return nil, nil, err
 	}
@@ -250,6 +255,7 @@ func (c *Catalog) alterTableSetSchema(stmt *ast.AlterTableSetSchemaStmt) error {
 }
 
 func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
+	fmt.Printf("catalog.createTable: %v.\n", stmt.Name.Schema)
 	ns := stmt.Name.Schema
 	if ns == "" {
 		ns = c.DefaultSchema
@@ -327,6 +333,12 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	}
 
 	schema.Tables = append(schema.Tables, &tbl)
+	defaultSchema, err := c.getSchema(c.DefaultSchema)
+	if err != nil {
+		fmt.Sprintf("Failed getting default schema: %s!\n", c.DefaultSchema)
+	}
+	defaultSchema.Tables = append(defaultSchema.Tables, &tbl)
+	fmt.Sprintf("Adding table(%s) to default schema(%s ).", defaultSchema.Name, tbl.Rel)
 	return nil
 }
 

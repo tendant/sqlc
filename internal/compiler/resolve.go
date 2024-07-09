@@ -39,6 +39,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		if schema == "" {
 			schema = c.DefaultSchema
 		}
+		fmt.Printf("indexTable: schema: %s, table: %s.\n", schema, table.Rel.Name)
 		if _, exists := typeMap[schema]; !exists {
 			typeMap[schema] = map[string]map[string]*catalog.Column{}
 		}
@@ -55,6 +56,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			continue
 		}
 		fqn, err := ParseTableName(rv)
+		fmt.Println("Parsed Table Name:" + fqn.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -63,6 +65,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		}
 		table, err := c.GetTable(fqn)
 		if err != nil {
+			fmt.Printf("resolveCatalogRefs GetTable error: %+v, %+v.\n", fqn, err)
 			if qc == nil {
 				continue
 			}
@@ -72,6 +75,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			}
 			continue
 		}
+		fmt.Printf("resolveCatalogRefs indexTable: %s\n", fqn.Name)
 		err = indexTable(table)
 		if err != nil {
 			return nil, err
@@ -220,6 +224,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				var found int
 				for _, table := range search {
 					schema := table.Schema
+					fmt.Printf("search: schema: %s, table: %s, key: %s.\n", schema, table.Name, key)
 					if schema == "" {
 						schema = c.DefaultSchema
 					}
@@ -251,6 +256,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				}
 
 				if found == 0 {
+					fmt.Printf("Column does not exist: %s, %v", key, node.Location)
 					return nil, &sqlerr.Error{
 						Code:     "42703",
 						Message:  fmt.Sprintf("column %q does not exist", key),

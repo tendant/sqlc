@@ -39,6 +39,19 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		if schema == "" {
 			schema = c.DefaultSchema
 		}
+		// Add to default schema
+		if schema != c.DefaultSchema {
+			defaultSchema := c.DefaultSchema
+			fmt.Printf("indexTable: schema: %s, table: %s.\n", defaultSchema, table.Rel.Name)
+			if _, exists := typeMap[defaultSchema]; !exists {
+				typeMap[defaultSchema] = map[string]map[string]*catalog.Column{}
+			}
+			typeMap[defaultSchema][table.Rel.Name] = map[string]*catalog.Column{}
+			for _, c := range table.Columns {
+				cc := c
+				typeMap[defaultSchema][table.Rel.Name][c.Name] = cc
+			}
+		}
 		fmt.Printf("indexTable: schema: %s, table: %s.\n", schema, table.Rel.Name)
 		if _, exists := typeMap[schema]; !exists {
 			typeMap[schema] = map[string]map[string]*catalog.Column{}

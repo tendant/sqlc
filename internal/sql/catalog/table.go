@@ -159,9 +159,9 @@ func (c *Catalog) getTable(tableName *ast.TableName) (*Schema, *Table, error) {
 	}
 	table, _, err := schema.getTable(tableName)
 	fmt.Printf("Found table (%s) for schema (%s).", tableName, schemaName)
-	for i := range table.Columns {
-		fmt.Println("Column Name:" + table.Columns[i].Name)
-	}
+	// for i := range table.Columns {
+	// 	fmt.Println("Column Name:" + table.Columns[i].Name)
+	// }
 	if err != nil {
 		return nil, nil, err
 	}
